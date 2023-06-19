@@ -18,6 +18,22 @@ def main():
             add_movie(title, url)
         
         set_website_visited(page.url)
+    
+    # Scrape movie page
+    unvisited_movies = get_unvisited_movies()
+    for index, page in enumerate(unvisited_movies):
+        details = scrape_movie(page.url)
+        set_movie_details(
+                page.url,
+                details[-1],
+                details[0],
+                details[1],
+                details[2],
+                details[3]) 
+
+        set_movie_visited(page.url)
+        if index == 20:
+            break
 
 if __name__ == '__main__':
     main()

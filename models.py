@@ -26,6 +26,7 @@ class Movie(BaseModel):
     release = DateField(default=None)
     is_visited = BooleanField(default=False)
     genres = ManyToManyField(Genre, backref='movies')
+    duration = IntegerField()
 
 class Website(BaseModel):
     url = CharField(unique=True)
