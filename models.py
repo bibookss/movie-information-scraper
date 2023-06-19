@@ -9,7 +9,7 @@ _user = config['USER']
 _password = config['PASSWORD']
 _database = config['DATABASE']
 
-db = MySQLDatabase(database, host=_host, user=_user, password=_password)
+db = MySQLDatabase(_database, host=_host, user=_user, password=_password)
 
 class BaseModel(Model):
     class Meta:
@@ -24,9 +24,14 @@ class Movie(BaseModel):
     description = TextField(default=None)
     certification = CharField(default=None)
     release = DateField(default=None)
-    genres = ManyToManyField(Genre)
     is_visited = BooleanField(default=False)
-    
+    genres = ManyToManyField(Genre, backref='movies')
+
 class Website(BaseModel):
     url = CharField(unique=True)
     is_visited = BooleanField(default=False)
+
+MovieGenre = Movie.genres.get_through_model()
+
+db.create_tables([Genre, Movie, MovieGenre, Website])
+

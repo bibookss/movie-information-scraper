@@ -1,4 +1,5 @@
 from models import Website
+from peewee import IntegrityError
 import requests
 from bs4 import BeautifulSoup as bs
 

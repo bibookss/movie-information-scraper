@@ -1,4 +1,5 @@
 from models import Genre
+from peewee import IntegrityError
 
 def add_genre(_name):
     try:

@@ -1,9 +1,10 @@
 from models import Movie
+from peewee import IntegrityError
 
 def add_movie(_name, _url):
     try:
         url = 'https://www.themoviedb.org' + _url
-        movie = Movie.create(name=name, url=_url) 
+        movie = Movie.create(name=_name, url=_url) 
     except IntegrityError:
         print(f'Movie with the same url, {_url}, already exists.')
         
