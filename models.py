@@ -27,12 +27,21 @@ class Movie(BaseModel):
     is_visited = BooleanField(default=False)
     genres = ManyToManyField(Genre, backref='movies')
     duration = IntegerField()
+    director = ForeignKeyField(Director, backref='movies')
+    actors = ManyToManyField(Actor, backref='movies')
 
 class Website(BaseModel):
     url = CharField(unique=True)
     is_visited = BooleanField(default=False)
 
-MovieGenre = Movie.genres.get_through_model()
+class Director(BaseModel):
+    name = CharField(unique=True)
 
-db.create_tables([Genre, Movie, MovieGenre, Website])
+class Actor(BaseMode):
+    name = CharField(unique=True)
+
+MovieGenre = Movie.genres.get_through_model()
+MovieActor = Movie.actors.get_through_model()
+
+db.create_tables([Genre, Movie, MovieGenre, Director, Actor, MovieActor, Website])
 
