@@ -5,15 +5,15 @@ def add_genre(_name):
     try:
         genre = Genre.create(name=_name)
         return genre
-    except IntegrityError:
+    except IntegrityError as e:
         existing_genre = Genre.get(name=_name)
-        print('Genre with the same name already exists.')
+        print('Genre with the same name already exists.', str(e))
         return existing_genre
 
 def get_genre(_name):
     try:
         genre = Genre.get(name=_name)
         return genre
-    except IntegrityError:
-        print('Genre does not exist.')
+    except Genre.DoesNotExist as e:
+        print('Genre does not exist.', str(e))
         return add_genre(_name)

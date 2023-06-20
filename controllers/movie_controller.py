@@ -4,14 +4,16 @@ from datetime import datetime
 import requests
 from bs4 import BeautifulSoup as bs
 from controllers.genre_controller import get_genre
+from controllers.director_controller import get_director
+from controllers.actor_controller import get_actor
 
 def add_movie(_name, _url):
     try:
         _url = 'https://www.themoviedb.org' + _url
         movie = Movie.create(name=_name, url=_url) 
-    except IntegrityError:
-        print(f'Movie with the same url, {_url}, already exists.')
-        
+    except IntegrityError as e:
+        print(f'Movie with the same url, {_url}, already exists.', str(e))
+
 def set_movie_details(_url, _details):
     try:
         movie = Movie.get(Movie.url == _url)
@@ -46,6 +48,25 @@ def set_movie_details(_url, _details):
         else:
             movie.genres.add([])
 
+        if 'directors' in _details:
+            print("Direct")
+            directors = _details['directors']
+            loaded_directors = [get_director(i) for i in directors]
+
+            try:
+                movie.directors.add(loaded_directors)
+            except:
+                pass
+
+        if 'actors' in _details:
+            actors = _details['actors']
+            loaded_actors = [get_actor(i) for i in actors]
+
+            try:
+                movie.actors.add(loaded_actors)
+            except:
+                pass
+
         movie.is_visited = True
 
         return movie
@@ -63,8 +84,8 @@ def set_movie_visited(_url):
         movie = Movie.get(Movie.url == _url)
         movie.is_visited = True
         movie.save()
-    except IntegrityError:
-        print('Movie does not exist')
+    except IntegrityError as e:
+        print('Movie does not exist', str(e))
 
 def convert_duration_to_minutes(duration):    
     duration_l = duration.split()
@@ -105,6 +126,7 @@ def scrape_movie(url):
     page = requests.get(url, headers=headers)
     soup = bs(page.content, 'html.parser')
     
+    # Get facts
     div_facts = soup.find('div', class_='facts')
     span_elements = div_facts.find_all('span')
     
@@ -112,16 +134,47 @@ def scrape_movie(url):
     for span in span_elements:
         details[span.get('class')[0]] = span.text
         
+    # Get overview
     div_overview = soup.find('div', class_='overview')
     p = div_overview.find('p')
     
     details['overview'] = p.text
             
+    # Get director/s
+    ol_profile = soup.find('ol', class_='people no_image')
+    profiles = ol_profile.find_all('li', class_='profile')
+        
+    directors = []
+    for item in profiles:
+        name = item.find('a').text.strip()
+        title = item.find('p', class_='character').text.strip()
+        title = title.split(',')
+        if 'Director' in title:
+            directors.append(name)
+
+    details['directors'] = directors
+    
+    # Get actors/s
+    actors = []
+
+    ol_actors = soup.find('ol', class_='people scroller')
+    if ol_actors is not None:
+        actor_list = ol_actors.find_all('li', class_='card')
+        if actor_list is not None:
+            for item in actor_list:
+                actor_name = item.find('p').find('a').text
+                actors.append(actor_name)
+    
+    details['actors'] = actors
+    
     return details
 
 def clean_movie_details(details):
-    cleaned_data = {key: value.strip().replace('\n', '').replace('\r', '').replace('\t', '') 
-                    for key, value in details.items()}
+    cleaned_data = {
+        key: value.strip().replace('\n', '').replace('\r', '').replace('\t', '') 
+        if not isinstance(value, list) else value
+        for key, value in details.items()
+    }
     
     if 'release' in cleaned_data:
         cleaned_data['release'] = convert_date_to_datetime(cleaned_data['release'])
