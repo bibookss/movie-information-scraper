@@ -79,14 +79,6 @@ def get_unvisited_movies():
     query = Movie.select().where(Movie.is_visited == False)
     return query
 
-def set_movie_visited(_url):
-    try:        
-        movie = Movie.get(Movie.url == _url)
-        movie.is_visited = True
-        movie.save()
-    except IntegrityError as e:
-        print('Movie does not exist', str(e))
-
 def convert_duration_to_minutes(duration):    
     duration_l = duration.split()
     total_minutes = 0
