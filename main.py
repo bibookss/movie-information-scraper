@@ -13,7 +13,7 @@ def main():
 
     for index, page in enumerate(unvisited_websites):
         movies = scrape_website(page.url)
-    
+        print(page.url) 
         for title, url in movies:
             add_movie(title, url)
         
@@ -21,19 +21,17 @@ def main():
     
     # Scrape movie page
     unvisited_movies = get_unvisited_movies()
+    movies = []
     for index, page in enumerate(unvisited_movies):
+        print(page.url)
         details = scrape_movie(page.url)
-        set_movie_details(
-                page.url,
-                details[-1],
-                details[0],
-                details[1],
-                details[2],
-                details[3]) 
-
-        set_movie_visited(page.url)
-        if index == 20:
-            break
+        cleaned_details = clean_movie_details(details)
+        
+        movies.append(set_movie_details(page.url, cleaned_details))
+        
+        if index % 20 == 0:
+            bulk_update_movies(movies)
+            movies.clear()
 
 if __name__ == '__main__':
     main()
